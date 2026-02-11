@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+<head>
+    <title>Admin</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #eee; }
+        .header { background: #333; color: white; padding: 15px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { color: white; text-decoration: none; padding: 5px 10px; border-radius: 4px; margin-left: 10px; background: #555; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #007bff; color: white; }
+        .kilit-btn { background: red; color: white; text-decoration: none; padding: 5px; border-radius: 3px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>🔧 <%= text.admin_btn %></h2>
+        <div>
+            <a href="/dashboard" class="btn"><%= text.geri_btn %></a>
+            <a href="?lang=<%= lang === 'tr' ? 'en' : 'tr' %>" class="btn"><%= text.dil_btn %></a>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 8px;">
+        <h3><%= text.ekle_btn %></h3>
+        <form action="/admin/ekle" method="POST">
+            <input type="text" name="yenikadi" placeholder="<%= text.kadi %>" required style="padding: 5px;">
+            <input type="text" name="yenisifre" placeholder="<%= text.sifre %>" required style="padding: 5px;">
+            <select name="yenirol" style="padding: 5px;">
+                <option value="izleyici">İzleyici</option>
+                <option value="admin">Admin</option>
+            </select>
+            <button type="submit" style="background: green; color: white; border: none; padding: 6px 15px; cursor: pointer;">+</button>
+        </form>
+    </div>
+
+    <h3>Kullanıcı Listesi</h3>
+    <table>
+        <tr><th>ID</th><th><%= text.kadi %></th><th>Rol</th><th>Durum</th><th>İşlem</th></tr>
+        <% users.forEach(u => { %>
+        <tr>
+            <td><%= u.id %></td>
+            <td><%= u.kullanici_adi %></td>
+            <td><%= u.rol %></td>
+            <td>
+                <% if(u.kilitli_mi) { %> 
+                    <span style="color:red; font-weight:bold;">KİLİTLİ (<%= u.hatali_giris %> Hata)</span> 
+                <% } else { %> 
+                    <span style="color:green;">Aktif</span> 
+                <% } %>
+            </td>
+            <td>
+                <% if(u.kilitli_mi) { %> 
+                    <a href="/admin/kilit-ac/<%= u.id %>" class="kilit-btn">🔓 <%= text.kilit_ac %></a> 
+                <% } %>
+            </td>
+        </tr>
+        <% }) %>
+    </table>
+</body>
+</html>
