@@ -1,0 +1,52 @@
+✅ SİSTEM DURUMU: Sunucu Çalışıyor (PID: 3100)
+
+[MODÜL 1] Veritabanı Bütünlük Testi (SQLite3)
+   📄 Dosya: sensor_verileri.db (Boyut: 44K)
+   🔍 Tablo Yapısı Sorgulanıyor...
+      - Tablo: olcumler
+      - Tablo: sqlite_sequence
+      - Tablo: kullanicilar
+      - Tablo: loglar
+   ✅ KANIT ONAYLANDI: Veritabanı aktif ve tablolar mevcut.
+
+[MODÜL 2] SSL/TLS Güvenlik Sertifikası Analizi
+   🔐 Sertifika Dosyası: Mevcut
+   📜 Kime Ait (CN): subject=C=AU, ST=Some-State, O=Internet Widgits Pty Ltd, CN=10.42.0.1
+   📅 Geçerlilik: notAfter=Jan  2 12:57:15 2027 GMT
+   🔑 Parmak İzi: sha1 Fingerprint=27:3D:40:FF:0A:59:04:B1:9E:2B:3A:D1:B6:24:74:4A:D1:08:C5:95
+   ✅ KANIT ONAYLANDI: Sunucu HTTPS (Şifreli) isteklerine cevap veriyor.
+
+[MODÜL 3] WebSocket Secure (WSS) Haberleşme Testi
+   📡 Protokol: WSS (WebSocket Secure over SSL)
+   ⏱️ Tepki Süresi: 13ms
+   ✅ KANIT ONAYLANDI: Şifreli soket bağlantısı kuruldu.
+
+=======================================================
+   TEST TAMAMLANDI. RAPOR KAYDEDİLDİ: sistem_raporu.txt   
+=======================================================
+✅ SİSTEM DURUMU: Sunucu Çalışıyor (PID: 2891)
+
+[MODÜL 1] Veritabanı Bütünlük Testi (SQLite3)
+   📄 Dosya: sensor_verileri.db (Boyut: 52K)
+   🔍 Tablo Yapısı Sorgulanıyor...
+      - Tablo: olcumler
+      - Tablo: sqlite_sequence
+      - Tablo: kullanicilar
+      - Tablo: loglar
+   ✅ KANIT ONAYLANDI: Veritabanı aktif ve tablolar mevcut.
+
+[MODÜL 2] SSL/TLS Güvenlik Sertifikası Analizi
+   🔐 Sertifika Dosyası: Mevcut
+   📜 Kime Ait (CN): subject=C=AU, ST=Some-State, O=Internet Widgits Pty Ltd, CN=10.42.0.1
+   📅 Geçerlilik: notAfter=Jan  2 12:57:15 2027 GMT
+   🔑 Parmak İzi: sha1 Fingerprint=27:3D:40:FF:0A:59:04:B1:9E:2B:3A:D1:B6:24:74:4A:D1:08:C5:95
+   ✅ KANIT ONAYLANDI: Sunucu HTTPS (Şifreli) isteklerine cevap veriyor.
+
+[MODÜL 3] WebSocket Secure (WSS) Haberleşme Testi
+   📡 Protokol: WSS (WebSocket Secure over SSL)
+   ⏱️ Tepki Süresi: 13ms
+   ✅ KANIT ONAYLANDI: Şifreli soket bağlantısı kuruldu.
+
+=======================================================
+   TEST TAMAMLANDI. RAPOR KAYDEDİLDİ: sistem_raporu.txt   
+=======================================================

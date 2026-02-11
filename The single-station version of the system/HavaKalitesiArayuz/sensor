@@ -1,0 +1,119 @@
+/*
+ * TÜM SENSÖRLER TEST KODU (BME280 + MH-Z19 + ZH03B/PMS)
+ * -----------------------------------------------------
+ * Bağlantılar (Senin Yaptığın Şekilde):
+ * BME280 (I2C): SDA->G21, SCL->G22
+ * MH-Z19 (UART2): TX->G16, RX->G17
+ * PM Sensör (UART1): TX->G18, RX->G19
+ */
+
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include <HardwareSerial.h>
+#include <MHZ19.h>
+
+// --- 1. PIN AYARLARI ---
+// Senin bağlantına göre ESP32'nin DİNLEME (RX) pinleri:
+#define RX_PIN_MHZ19 16  // MH-Z19'un TX ucu buraya bağlı
+#define TX_PIN_MHZ19 17  // MH-Z19'un RX ucu buraya bağlı
+
+#define RX_PIN_PMS 18    // PM Sensörünün TX ucu buraya bağlı
+#define TX_PIN_PMS 19    // PM Sensörünün RX ucu buraya bağlı
+
+// --- 2. NESNELER ---
+Adafruit_BME280 bme;
+MHZ19 myMHZ19;
+HardwareSerial SerialMHZ(2); // UART2 (MH-Z19 için)
+HardwareSerial SerialPMS(1); // UART1 (PM Sensör için)
+
+// Toz verilerini tutacak kutustruct PMS_Data {
+  uint16_t PM_1_0;
+  uint16_t PM_2_5;
+  uint16_t PM_10_0;
+};
+PMS_Data pms;
+
+void setup() {
+  Serial.begin(115200); // Bilgisayar ekran hızı
+  delay(1000);
+  Serial.println("\n\n--- SİSTEM BAŞLATILIYOR ---");
+
+  // A) BME280 BAŞLATMA
+  Serial.print("1. BME280 (Sicaklik)... ");
+  if (!bme.begin(0x76)) {
+    Serial.println("BULUNAMADI! (Kablolari kontrol et)");
+  } else {
+    Serial.println("TAMAM. ✅");
+  }
+
+  // B) MH-Z19 (CO2) BAŞLATMA
+  Serial.print("2. MH-Z19 (CO2)... ");
+  SerialMHZ.begin(9600, SERIAL_8N1, RX_PIN_MHZ19, TX_PIN_MHZ19);
+  myMHZ19.begin(SerialMHZ);
+  myMHZ19.autoCalibration(false); // Otomatik kalibrasyon kapalı
+  Serial.println("TAMAM. ✅ (Isınması 3 dk sürer)");
+
+  // C) PM SENSÖRÜ (TOZ) BAŞLATMA
+  Serial.print("3. PM Sensor (Toz)... ");
+  SerialPMS.begin(9600, SERIAL_8N1, RX_PIN_PMS, TX_PIN_PMS);
+  Serial.println("TAMAM. ✅");
+
+  Serial.println("-------------------------------------");
+}
+
+void loop() {
+  // Her 3 saniyede bir ölçüm yapalım
+  delay(3000);
+
+  // --- VERİ OKUMA ---
+  float sicaklik = bme.readTemperature();
+  float nem = bme.readHumidity();
+  
+  // CO2 okuma
+  int co2 = myMHZ19.getCO2();
+
+  // Toz okuma (Fonksiyonu çağır)
+  bool tozVerisiGeldi = readPMSdata(SerialPMS);
+
+  // --- EKRANA YAZDIRMA ---
+  Serial.print("🌡️ SICAKLIK: "); 
+  Serial.print(sicaklik); 
+  Serial.print(" C  |  💧 NEM: %"); 
+  Serial.println(nem);
+
+  Serial.print("💨 CO2: "); 
+  Serial.print(co2); 
+  Serial.println(" ppm");
+
+  Serial.print("🌫️ PM2.5 (Toz): ");
+  if (tozVerisiGeldi) {
+    Serial.print(pms.PM_2_5); 
+    Serial.println(" ug/m3");
+  } else {
+    Serial.println("Veri Bekleniyor... (Kablolar Gevşek Olabilir)");
+  }
+  
+  Serial.println("-------------------------------------");
+}
+
+// --- YARDIMCI FONKSİYON: TOZ VERİSİNİ ÇÖZME ---
+// Bu kısım sensörden gelen karışık sinyalleri sayıya çevirir.
+bool readPMSdata(HardwareSerial &ser) {
+  if (!ser.available()) return false;
+  
+  // Sensörden gelen paket başlıklarını (0x42 ve 0x4D) yakala
+  while (ser.available()) {
+    if (ser.read() == 0x42 && ser.read() == 0x4D) {
+      uint8_t buffer[30];
+      // Geri kalan 30 byte veriyi oku
+      if (ser.readBytes(buffer, 30) == 30) {
+        pms.PM_1_0 = (buffer[8] << 8) | buffer[9];
+        pms.PM_2_5 = (buffer[10] << 8) | buffer[11];
+        pms.PM_10_0 = (buffer[12] << 8) | buffer[13];
+        return true;
+      }
+    }
+  }
+  return false;
+}

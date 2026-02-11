@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+<head>
+    <title><%= text.baslik %></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="/js/chart.js"></script> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #f3f4f6; --card-bg: #ffffff; --text-main: #1f2937; --text-sub: #9ca3af;
+            --color-temp: #e53935; --color-hum: #039be5; --color-co2: #43a047; --color-dust: #fb8c00; --color-score: #7e57c2;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); }
+        
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; box-shadow: 0 0 0 2px #fff; transition: 0.3s; }
+        .status-active { background: #10b981; box-shadow: 0 0 0 2px #d1fae5; }
+        
+        .btn { padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; display: inline-block; transition: 0.2s; }
+        .btn-gray { background: #f3f4f6; color: #4b5563; }
+        .btn-gray:hover { background: #e5e7eb; }
+        .btn-red { background: #fee2e2; color: #991b1b; margin-left: 10px;}
+        .btn-red:hover { background: #fecaca; }
+        .btn-orange { background: #fff7ed; color: #c2410c; margin-right: 5px; }
+        .btn-orange:hover { background: #ffedd5; }
+
+        /* GRID */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-bottom: 35px; }
+        
+        /* KARTLAR */
+        .card { background: var(--card-bg); border-radius: 20px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; height: 220px; position: relative; overflow: hidden; }
+        .card:hover { transform: translateY(-3px); transition: transform 0.2s; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-sub); }
+        .card-icon { font-size: 1.5rem; opacity: 0.8; }
+        .card-value { font-size: 2.5rem; font-weight: 700; color: var(--text-main); line-height: 1; }
+        .card-unit { font-size: 1rem; font-weight: 500; color: var(--text-sub); margin-left: 4px; }
+        .chart-container { position: absolute; bottom: 0; left: 0; right: 0; height: 100px; width: 100%; }
+        
+        /* BÜYÜK ALANLAR */
+        .big-chart-section { background: var(--card-bg); border-radius: 20px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .section-title { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .console-box { background: #111827; color: #10b981; font-family: 'Courier New', monospace; padding: 20px; border-radius: 12px; height: 180px; overflow-y: auto; font-size: 0.85rem; border-left: 4px solid #3b82f6; }
+        .log-entry { margin-bottom: 6px; border-bottom: 1px solid #1f2937; padding-bottom: 4px; }
+        .log-time { color: #6b7280; margin-right: 8px; }
+        .alarm-banner { background: #fef2f2; border: 1px solid #ef4444; color: #b91c1c; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-weight: 600; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <div id="statusDot" class="status-dot"></div>
+            <div>
+                <h2 style="margin:0; font-size: 1.25rem;"><%= text.baslik %></h2>
+                <small id="lastUpdateText" style="color: #6b7280;">Veriler Bekleniyor...</small>
+            </div>
+        </div>
+        <div>
+            <span style="margin-right: 15px; font-weight: 500; color: #374151;">👤 <%= user.kullanici_adi %></span>
+            
+            <% if(user.rol === 'admin') { %> 
+                <a href="/admin" class="btn btn-orange">🛠️ Yönetim</a> 
+            <% } %>
+            
+            <a href="?lang=<%= lang === 'tr' ? 'en' : 'tr' %>" class="btn btn-gray">🌐 <%= lang === 'tr' ? 'EN' : 'TR' %></a>
+            <a href="/logout" class="btn btn-red">Çıkış</a>
+        </div>
+    </div>
+
+    <div id="alarmBanner" class="alarm-banner">⚠️ DİKKAT: CO2 SEVİYESİ KRİTİK! FAN TAM GÜÇTE!</div>
+
+    <div class="grid-container">
+        <div class="card">
+            <div class="card-header"><span class="card-label">SICAKLIK</span><span class="card-icon" style="color:var(--color-temp)">🌡️</span></div>
+            <div class="card-value"><span id="valTemp">--</span><span class="card-unit">°C</span></div>
+            <div class="chart-container"><canvas id="sparkTemp"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-label">NEM</span><span class="card-icon" style="color:var(--color-hum)">💧</span></div>
+            <div class="card-value"><span id="valHum">--</span><span class="card-unit">%</span></div>
+            <div class="chart-container"><canvas id="sparkHum"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-label">CO2</span><span class="card-icon" style="color:var(--color-co2)">☁️</span></div>
+            <div class="card-value"><span id="valCO2">--</span><span class="card-unit">ppm</span></div>
+            <div class="chart-container"><canvas id="sparkCO2"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-label">TOZ</span><span class="card-icon" style="color:var(--color-dust)">🌪️</span></div>
+            <div class="card-value"><span id="valDust">--</span><span class="card-unit">µg/m³</span></div>
+            <div class="chart-container"><canvas id="sparkDust"></canvas></div>
+        </div>
+        <div class="card" style="border-top: 4px solid var(--color-score);">
+            <div class="card-header"><span class="card-label" style="color:var(--color-score)">PUAN</span><span class="card-icon" style="color:var(--color-score)">🛡️</span></div>
+            <div class="card-value"><span id="valScore">--</span><span class="card-unit">/100</span></div>
+            <div class="chart-container"><canvas id="sparkScore"></canvas></div>
+        </div>
+    </div>
+
+    <div class="big-chart-section">
+        <div class="section-title">📊 DETAYLI SİSTEM ANALİZİ</div>
+        <div style="height: 350px;"><canvas id="mainChart"></canvas></div>
+    </div>
+
+    <div class="big-chart-section" style="padding: 20px;">
+        <div class="section-title"><%= text.konsol_baslik %></div>
+        <div class="console-box" id="konsol">Veriler yükleniyor...</div>
+    </div>
+
+    <script>
+        let charts = {};
+        
+        function initCharts() {
+            const commonOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false } }, layout: { padding: 0 }
+            };
+
+            ['Temp', 'Hum', 'CO2', 'Dust', 'Score'].forEach(key => {
+                charts[key] = new Chart(document.getElementById('spark' + key), {
+                    type: 'line',
+                    data: { labels: [], datasets: [{ data: [], borderWidth: 2, pointRadius: 0, fill: true, tension: 0.4 }] },
+                    options: commonOptions
+                });
+            });
+
+            charts.main = new Chart(document.getElementById('mainChart'), {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Sıcaklık', data: [], borderColor: '#e53935', tension: 0.4, yAxisID: 'y' },
+                    { label: 'Toz', data: [], borderColor: '#fb8c00', borderDash: [5,5], tension: 0.4, yAxisID: 'y' },
+                    { label: 'CO2', data: [], borderColor: '#43a047', backgroundColor: 'rgba(67, 160, 71, 0.05)', fill: true, tension: 0.4, yAxisID: 'y1' }
+                ]},
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { type: 'linear', display: true, position: 'left' },
+                        y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+
+        async function updateData() {
+            try {
+                const response = await fetch('/api/guncel');
+                const data = await response.json();
+
+                document.getElementById('valTemp').innerText = data.sensor.sicaklik;
+                document.getElementById('valHum').innerText = data.sensor.nem;
+                document.getElementById('valCO2').innerText = data.sensor.co2;
+                document.getElementById('valDust').innerText = data.sensor.pm25;
+
+                document.getElementById('statusDot').classList.toggle('status-active', true);
+                document.getElementById('lastUpdateText').innerText = "Güncel: " + new Date().toLocaleTimeString();
+                document.getElementById('alarmBanner').style.display = data.alarm ? 'block' : 'none';
+
+                const labels = data.gecmis.map(v => new Date(v.tarih).toLocaleTimeString());
+                const dTemp = data.gecmis.map(v => v.sicaklik);
+                const dHum = data.gecmis.map(v => v.nem);
+                const dCO2 = data.gecmis.map(v => v.islenmis_co2);
+                const dDust = data.gecmis.map(v => v.pm25);
+                
+                const dScore = data.gecmis.map(v => {
+                    let s = 100;
+                    let c = v.islenmis_co2 || 400, p = v.pm25 || 0;
+                    if(c > 800) s -= ((c-800)/100)*5;
+                    if(p > 15) s -= ((p-15)/10)*5;
+                    return Math.max(0, Math.round(s));
+                });
+                document.getElementById('valScore').innerText = dScore[dScore.length-1] || 100;
+
+                updateChart(charts.Temp, dTemp, '#e53935', 'rgba(229, 57, 53, 0.15)');
+                updateChart(charts.Hum, dHum, '#039be5', 'rgba(3, 155, 229, 0.15)');
+                updateChart(charts.CO2, dCO2, '#43a047', 'rgba(67, 160, 71, 0.15)');
+                updateChart(charts.Dust, dDust, '#fb8c00', 'rgba(251, 140, 0, 0.15)');
+                updateChart(charts.Score, dScore, '#7e57c2', 'rgba(126, 87, 194, 0.15)');
+
+                charts.main.data.labels = labels;
+                charts.main.data.datasets[0].data = dTemp;
+                charts.main.data.datasets[1].data = dDust;
+                charts.main.data.datasets[2].data = dCO2;
+                charts.main.update('none');
+
+                const konsolHTML = data.loglar.map(log => 
+                    `<div class="log-entry"><span class="log-time">[${new Date(log.tarih).toLocaleTimeString()}]</span> ${log.islem}: ${log.detay}</div>`
+                ).join('');
+                document.getElementById('konsol').innerHTML = konsolHTML;
+
+            } catch (error) {
+                console.error("Veri hatası:", error);
+                document.getElementById('statusDot').classList.remove('status-active');
+            }
+        }
+
+        function updateChart(chart, data, color, bg) {
+            chart.data.labels = data;
+            chart.data.datasets[0].data = data;
+            chart.data.datasets[0].borderColor = color;
+            chart.data.datasets[0].backgroundColor = bg;
+            chart.update('none');
+        }
+
+        initCharts();
+        updateData(); 
+        setInterval(updateData, 2000); 
+    </script>
+</body>
+</html>

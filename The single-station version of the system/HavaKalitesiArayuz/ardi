@@ -1,0 +1,97 @@
+#include <WiFi.h>
+#include <WebSocketsClient.h>
+#include <ArduinoJson.h>
+
+// --- AYARLAR ---
+const char* ssid = "HavaKalitesi";      
+const char* password = "12345678";
+const char* websocket_server_host = "10.42.0.1"; // <-- Hotspot IP'niz
+const uint16_t websocket_server_port = 3000;
+
+// --- SERTİFİKA ---
+// Not: Sertifika değişkeni tanımlı olsa da, WebSocketsClient kütüphanesinin
+// standart beginSSL fonksiyonu sertifika doğrulamasını varsayılan olarak 
+// yapmayabilir (insecure mode). Eğer bağlantı kurulamazsa "setInsecure" gerekebilir.
+const char* test_root_ca = R"EOF(
+-----BEGIN CERTIFICATE-----
+MIIDkzCCAnugAwIBAgIUHK6GZt17o02cC1gzT67pRF4dBOwwDQYJKoZIhvcNAQEL
+BQAwWTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM
+GEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDESMBAGA1UEAwwJMTAuNDIuMC4xMB4X
+DTI2MDEwMjEyNTcxNVoXDTI3MDEwMjEyNTcxNVowWTELMAkGA1UEBhMCQVUxEzAR
+BgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMgUHR5
+IEx0ZDESMBAGA1UEAwwJMTAuNDIuMC4xMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+MIIBCgKCAQEAx1skTpjzViarPhwZky0cy7TqYOdKKlhL6Rb4N1Xw2lXDBJzWAV+q
+IV7XusKOPIE4CGCjMEGILAkiBpystNDZHO2fh8uIcTCnl9MZT6841s+Mj9cW9a1o
+mBquL64p7HKRa0DLvmaKKjPUaSEuyF+iVVLn7H3Hac+dFUEzx7xYPDtG9/WMPdbM
+Xfi7N03ZLxDAYnD0uLqjk7Xhawsm1iLlZtorgHEjbzw6Pt5cYS4ZYBwcYelJpWu+
++GQ/1kfmx6iIfxFW/S3Wf3nvzwXtvwjSnata1cnkGJSrQOK4vVnQR1bMDs7aT7Sf
+crRlWFvrtn7g0mn7adrr4BQ8DU65ESx08wIDAQABo1MwUTAdBgNVHQ4EFgQU4Z+0
+od/aKsNtYt36/lhEMT4EbVAwHwYDVR0jBBgwFoAU4Z+0od/aKsNtYt36/lhEMT4E
+bVAwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAfLS/2+c/of+G
+G21L0k9w6/hdyD+eeQ/tX9YZc7mZaMjyBIxQHpOWc7qFZM+znH/9nEnh+uh/7N+p
+xZ4f1rixkutLuCGNHAP4JjtIMYzUQFGE6WJqTv+dIyFqS7YwnR+CMUYCt70JEMD9
+r1DQDFrgDwf0YIp5XimzZZZw7xNFwMc/9CkpmIbUg+bUwCqedQLTBl3M6SLXuaKT
+Sdn6PPtDuZk0wR0ZkJZessfsXrjO5xTCje4q5OqwAoXYI7f3jcaVLPhq7trjdj5S
+TjozG5XkZD6A2wZlGV2tv6Dp8DZblhg2c34K/7w76ZSYJhmblRPP0E6oyYCMfy+3
+VA68QBgP6g==
+-----END CERTIFICATE-----
+)EOF";
+
+WebSocketsClient webSocket;
+
+// Rastgele Veri Üretip Gönderme
+void veriGonder() {
+  // JSON oluşturma işlemini String toplama yerine ArduinoJson ile yapmak daha güvenlidir
+  // ancak mevcut kodunuzu bozmamak için String yapısını korudum.
+  String json = "{";
+  json += "\"sicaklik\":" + String(random(20, 30)) + ",";
+  json += "\"nem\":" + String(random(40, 60)) + ",";
+  json += "\"co2\":" + String(random(400, 1200)) + ",";
+  json += "\"pm25\":" + String(random(0, 50));
+  json += "}";
+  
+  webSocket.sendTXT(json); 
+}
+
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+  switch(type) {
+    case WStype_DISCONNECTED:
+      Serial.println("[WSS] Bağlantı Koptu!");
+      break;
+    case WStype_CONNECTED:
+      Serial.println("[WSS] Sunucuya Bağlandık! ✅");
+      break;
+    case WStype_TEXT:
+      Serial.printf("[WSS] Mesaj geldi: %s\n", payload);
+      break;
+    case WStype_ERROR:
+      Serial.println("[WSS] Hata oluştu!");
+      break;
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  
+  Serial.print("Wi-Fi Bekleniyor");
+  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+  Serial.println("\nBağlandı!");
+
+  // --- SSL BAĞLANTISI ---
+  // beginSSL fonksiyonu temel SSL başlatır.
+  webSocket.beginSSL(websocket_server_host, websocket_server_port, "/");
+  
+  webSocket.onEvent(webSocketEvent);
+  webSocket.setReconnectInterval(5000);
+}
+
+void loop() {
+  webSocket.loop();
+  
+  static unsigned long lastTime = 0;
+  if (millis() - lastTime > 3000) { // 3 saniyede bir gönder
+    lastTime = millis();
+    veriGonder();
+  }
+}
