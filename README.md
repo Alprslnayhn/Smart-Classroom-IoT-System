@@ -9,8 +9,8 @@ A full-stack IoT solution for monitoring classroom air quality using multi-senso
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 <p align="center">
-  <img src="docs/screenshots/dashboar.jpeg" alt="Circuit Schematic 1" width="48%">
-  <img src="docs/screenshots/dashboard.jpeg" alt="Circuit Schematic 2" width="48%">
+  <img src="docs/screenshots/dashboar.png" alt="Circuit Schematic 1" width="48%">
+  <img src="docs/screenshots/dashboard.png" alt="Circuit Schematic 2" width="48%">
 </p>
 
 ## 📖 Overview
