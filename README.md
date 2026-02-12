@@ -6,7 +6,8 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="Main Dashboard" width="100%">
+  <img src="docs/screenshots/dashboard.png" alt="Main Dashboard" width="48%">
+  <img src="docs/screenshots/dashboar.png" alt="Main Dashboard" width="48%">
 </p>
 
 ## 📖 Overview
