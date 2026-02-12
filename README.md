@@ -1,134 +1,99 @@
-# Smart-Classroom-IoT-System
-A full-stack IoT solution for monitoring classroom air quality using multi-sensor fusion with ESP32 and Node.js. Features real-time dashboards, CO2-based ventilation control, and smart hysteresis algorithms.
+# 🏋️‍♂️ Stretch Timer & Workout Manager
 
-# 🏫 Smart Classroom Air Quality Monitoring System (IoT)
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Version](https://img.shields.io/badge/version-2.0.0-green.svg) ![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)
 
-![Status](https://img.shields.io/badge/Status-Completed-success)
-![Platform](https://img.shields.io/badge/Platform-ESP32%20%7C%20Node.js-blue)
-![Hardware](https://img.shields.io/badge/PCB-KiCad%20Design-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
+**A comprehensive, web-based workout assistant designed to organize physical therapy routines, interval training, and flexibility sessions.**
 
-<p align="center">
-  <img src="docs/screenshots/dashboar.png" alt="Circuit Schematic 1" width="48%">
-  <img src="docs/screenshots/dashboard.png" alt="Circuit Schematic 2" width="48%">
-</p>
-
-## 📖 Overview
-This project is a **Full-Stack IoT solution** designed to monitor and regulate air quality in high-capacity lecture halls. Unlike standard monitoring systems, it utilizes **Multi-Sensor Fusion** across distributed ESP32 nodes to calculate precise room averages and controls ventilation systems using **Hysteresis Algorithms**.
-
-The system handles dynamic environments (100+ students) and ensures data integrity through a custom TCP-like protocol over WebSockets, running entirely on an offline Intranet.
+> "What started as a simple Python loop timer has evolved into a full-featured Progressive Web Application."
 
 ---
 
-## 🏗️ System Architecture & Logic
+## 📈 Project Evolution (Before & After)
 
-The system follows a modular architecture where multiple measurement nodes send data to a central Node.js server.
+This project demonstrates a clear journey from a basic script to a complex UI application.
 
-<p align="center">
-  <img src="docs/screenshots/block_diagram.jpg" alt="System Block Diagram" width="48%">
-  <img src="docs/screenshots/flowchart.jpeg" alt="Data Flow Algorithm" width="48%">
-</p>
+### v1.0: The Legacy Script
+Initially, the project was a simple interval timer with a minimalist orange interface. It was limited to fixed durations and lacked program storage.
 
-### Power & Signal Architecture
-The system is designed with a dedicated **Power Block** using LM2576 regulators to ensure stable 5V supply for sensitive sensors (MH-Z19D, ZH03B), preventing voltage drops common in USB-powered setups.
-
-<p align="center">
-  <img src="docs/screenshots/power_block.jpg" alt="Power Block Diagram" width="90%">
-</p>
+![Legacy Version v1.0](img/legacy-v1.png)
+*(Fig 1: The initial prototype focused on simple loops)*
 
 ---
 
-## 🔌 Electronics & Circuit Design
+### v2.0: The Modern Workout System (Current)
+The application has been completely rewritten to support **complex routines**, **repetition tracking**, and **local data persistence**.
 
-The hardware design focuses on stability and noise reduction. The schematics include protection fuses (2A) and separated power lines for detection units and control units.
+### 🌟 Key Features
 
-### Schematics (KiCad)
-<p align="center">
-  <img src="docs/screenshots/schematic_1.jpeg" alt="Circuit Schematic 1" width="48%">
-  <img src="docs/screenshots/schematic_2.jpeg" alt="Circuit Schematic 2" width="48%">
-</p>
+#### 1. Advanced Routine Builder
+Unlike standard timers, you can customize every aspect of your workout.
+* **Hybrid Support:** Add exercises based on **Time** (e.g., Planks), **Reps** (e.g., Squats), or both.
+* **Granular Control:** Set specific rest intervals for "between sets" vs "after exercise".
 
-### Wiring Simulation & Prototype
-Below is the wiring diagram showing the connections between the ESP32, Buck Converter, and Sensors.
+![Workout Builder](img/feature-builder.png)
 
-<p align="center">
-  <img src="docs/screenshots/wiring_sim.jpeg" alt="Wiring Simulation" width="45%">
-  <img src="docs/screenshots/reel.jpg" alt="Real Hardware Prototype" width="45%">
-</p>
+#### 2. Dynamic Dashboard & Program Management
+Visualize your entire workout flow. You can edit, reorder, or delete exercises on the fly.
+* **Persistence:** Save your favorite routines (like "Morning Stretch" or "Hyperlordosis Fix") directly to your browser.
 
----
+![Dashboard View](img/feature-dashboard.png)
+![Saved Programs](img/feature-saved.png)
 
-## 📊 Algorithmic Verification (MATLAB)
+#### 3. Focus Mode (Active Workout)
+The execution screen is designed to minimize distractions.
+* **Visual Cues:** A large, color-coded progress ring.
+* **Interaction:** Manual "Done" button for rep-based exercises ensures you control the pace.
 
-Before deployment, the control algorithms were simulated using MATLAB to ensure stability.
+![Active Timer](img/feature-active.png)
 
-### 1. Hysteresis Control Logic
-To prevent the ventilation fans from oscillating rapidly (turning ON/OFF continuously), a hysteresis loop is implemented:
-* **Fan ON:** Threshold > 1150 ppm
-* **Fan OFF:** Threshold < 850 ppm
+#### 4. Custom Audio & Settings
+Tailor the experience to your environment.
+* **Audio Feedback:** Distinct sounds for start, rest, and finish.
+* **Safety:** Option to require confirmation before advancing to the next exercise.
 
-<p align="center">
-  <img src="docs/screenshots/matlab_sim_1.jpeg" alt="MATLAB Hysteresis Simulation" width="100%">
-</p>
-
-### 2. Occupancy & Load Simulation
-Simulation of CO2 accumulation rates based on student occupancy (25 -> 50 -> 100 students).
-
-<p align="center">
-  <img src="docs/screenshots/matlab_sim_2.jpeg" alt="MATLAB Load Simulation" width="100%">
-</p>
+![Settings Panel](img/feature-settings.png)
 
 ---
 
-## 💻 User Interface & Security
+## 🛠️ Technical Stack
 
-### Secure Login & Admin Panel
-The system features a robust authentication mechanism. It tracks failed login attempts and **automatically locks the account** after 5 incorrect tries to prevent brute-force attacks.
-
-<p align="center">
-  <img src="docs/screenshots/login_lock.png" alt="Security Lockout Feature" width="45%">
-  <img src="docs/screenshots/admin_panel.png" alt="Admin Panel" width="45%">
-</p>
+* **Frontend:** HTML5, CSS3 (Flexbox/Grid), JavaScript (ES6+)
+* **State Management:** Custom JS State Machine for handling Timer/Rest/Rep logic.
+* **Storage:** Web `localStorage` API for persisting user programs.
+* **Design:** Responsive Dark Mode UI.
 
 ---
 
-## 🛠️ Hardware Specifications
+## 🚀 How to Run
 
-### Deployment Scenarios
+Since this is a client-side web application, no installation is required.
 
-#### Scenario A: Master Node (Full Sensing)
-* **Code:** `firmware/Node_A_Master`
-* **Sensors:** MH-Z19 (CO2), PMS5003 (Dust), BME280 (Temp/Hum).
-* **Use Case:** Placed at the front of the class (Main pollution source).
-
-#### Scenario B: Satellite Node (Comfort Sensing)
-* **Code:** `firmware/Node_B_Satellite`
-* **Sensors:** MH-Z19 (CO2), BME280 (Temp/Hum).
-* **Use Case:** Placed at the back of the class.
-
----
-
-## 🚀 Installation & Usage
-
-1.  **Clone the Repository**
+1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/Alprslnayhn/Smart-Classroom-IoT-System.git](https://github.com/Alprslnayhn/Smart-Classroom-IoT-System.git)
+    git clone [https://github.com/Alprslnayhn/Stretch-Timer---Organize-Your-Stretching-Routine.git](https://github.com/Alprslnayhn/Stretch-Timer---Organize-Your-Stretching-Routine.git)
     ```
+2.  **Launch:**
+    Simply open the `index.html` file in any modern web browser (Chrome, Firefox, Safari).
 
-2.  **Backend Setup**
-    ```bash
-    cd backend
-    npm install
-    node db_setup.js  # Initialize SQLite Database
-    node server.js    # Start the Server
-    ```
-
-3.  **Firmware Upload**
-    * Open `firmware/Node_A_Master/main.ino` in Arduino IDE.
-    * Upload to ESP32.
-    * *Configure WiFi credentials via Serial Monitor (`SSID|PASS|IP`).*
+> **Tip:** For the best experience with audio features, it is recommended to use a local server (e.g., VS Code Live Server or Python `http.server`).
 
 ---
 
-## 🛡️ License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 🤝 Contributing
+
+Contributions make the open-source community an amazing place to learn. Any contributions you make are **greatly appreciated**.
+
+1.  Fork the Project
+2.  Create your Feature Branch (`git checkout -b feature/NewFeature`)
+3.  Commit your Changes
+4.  Push to the Branch
+5.  Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+*Developed by [Alprslnayhn](https://github.com/Alprslnayhn)*
